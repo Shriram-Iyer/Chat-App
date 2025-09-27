@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: all;
+}
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom animations for flashy logo */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+/* Always hidden scrollbar (scrolling still enabled) */
+.scrollbar-theme {
+  /* Firefox */
+  scrollbar-width: none; /* hide scrollbar */
+  scrollbar-color: transparent transparent;
+  /* Legacy Edge/IE */
+  -ms-overflow-style: none;
+}
+/* WebKit */
+.scrollbar-theme::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.scrollbar-theme::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-theme::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: none;
+}

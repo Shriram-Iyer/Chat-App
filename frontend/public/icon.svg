@@ -1,0 +1,47 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ConnectVibe Logo">
+  <title>ConnectVibe</title>
+  <defs>
+    <!-- Background gradient approximating from-primary via-secondary to-accent -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="50%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <!-- Utility solid colors matching primary / secondary / accent (for internal icons) -->
+    <linearGradient id="cameraPrimary" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#6366F1" />
+    </linearGradient>
+    <linearGradient id="cameraSecondary" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#EC4899" />
+    </linearGradient>
+    <linearGradient id="phoneAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect x="8" y="8" width="104" height="104" rx="24" ry="24" fill="url(#bgGradient)" />
+
+  <!-- Scaled inner group (mirrors React component transform) -->
+  <g transform="translate(-4,2) scale(1.12)">
+    <!-- Chat bubble (white) -->
+    <path
+      d="M30 35 C30 28, 35 23, 42 23 L78 23 C85 23, 90 28, 90 35 L90 65 C90 72, 85 77, 78 77 L50 77 L35 90 L42 77 C35 77, 30 72, 30 65 Z"
+      fill="#FFFFFF"
+    />
+    <!-- Camera body -->
+    <rect x="42" y="43" width="16" height="10" rx="2" ry="2" fill="url(#cameraPrimary)" />
+    <!-- Camera lens / side triangle -->
+    <path d="M58 46 L66 41 L66 55 L58 50 Z" fill="url(#cameraSecondary)" />
+    <!-- Smartphone icon (accent) -->
+    <g transform="translate(69 41) scale(0.6)">
+      <rect x="0" y="0" width="18" height="26" rx="3" fill="url(#phoneAccent)" />
+      <rect x="3" y="5" width="12" height="13" rx="1.5" fill="#FFFFFF" />
+      <circle cx="9" cy="22" r="2" fill="#FFFFFF" />
+      <rect x="7.5" y="2.2" width="3" height="0.9" rx="0.45" fill="#FFFFFF" />
+    </g>
+  </g>
+</svg>
