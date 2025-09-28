@@ -1,8 +1,9 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, g
 from flask_cors import CORS
 
 from config import CORS_ORIGINS, CORS_SUPPORTS_CREDENTIALS
 from service import login, sign_up, logout
+from utils import login_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 CORS(auth_bp, origns=CORS_ORIGINS, supports_credentials=CORS_SUPPORTS_CREDENTIALS)
@@ -19,5 +20,7 @@ def sign_up_route():
 
 
 @auth_bp.route('/logout', methods=['POST'])
+@login_required
 def logout_route():
-    return logout()
+    user = g.current_user
+    return logout(user)

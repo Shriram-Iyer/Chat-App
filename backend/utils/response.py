@@ -9,6 +9,7 @@ def response_user(user: User, include_timezone: bool = True):
         "username": user.username,
         "profile_pic": user.profile_pic,
         "about": user.about,
+        "status": user.status,
     }
     if include_timezone:
         response_user_dict["created_at"] = user.created_at.isoformat() if user.created_at else None

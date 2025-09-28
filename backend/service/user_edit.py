@@ -1,10 +1,10 @@
 from flask import jsonify
 from mongoengine.queryset.visitor import Q
 
+from config import cloudinary_uploader
 from models.friend_request import FriendRequest
 from models.user import User
 from utils import validate_update_profile_payload, response_user
-from config import cloudinary_uploader
 
 
 def update_profile(request, user):
@@ -99,12 +99,12 @@ def send_request(user, friend_id):
         if not request_obj:
             return jsonify({"error": "Failed to create friend request."}), 500
         return jsonify({
-                "recipient_id": str(request_obj.recipient.id),
-                "recipient": response_user(request_obj.recipient),
-                "status": request_obj.status,
-                "created_at": request_obj.created_at,
-                "updated_at": request_obj.updated_at
-            }), 200
+            "recipient_id": str(request_obj.recipient.id),
+            "recipient": response_user(request_obj.recipient),
+            "status": request_obj.status,
+            "created_at": request_obj.created_at,
+            "updated_at": request_obj.updated_at
+        }), 200
     except Exception as e:
         print(f"Error sending friend request: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
