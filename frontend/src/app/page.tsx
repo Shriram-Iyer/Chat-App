@@ -3,103 +3,85 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { FriendList, FriendPreview } from '@/components/chat/FriendList';
-import { MessagePanel, ChatMessage } from '@/components/chat/MessagePanel';
-import { themedToast } from '@/lib/themed-toast';
-import { messageApi } from '@/lib/api-config';
-import type { UserResponse } from '@/types/user';
+import { MessagePanel } from '@/components/chat/MessagePanel';
 import { useSocialStore } from '@/stores/socialStore';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function HomePage() {
-  // Top-level chat layout:
-  // - Left: FriendList (selection)
-  // - Right: MessagePanel (conversation + composer)
-  // We intentionally do not pre-select a friend; the right panel stays empty
-  // until the user chooses someone from the list.
-  // Auth still can be referenced later for conditional logic if needed
   useAuth();
 
-  const { friends: storeFriends, fetchAllFriends } = useSocialStore();
+  const {
+    friends: storeFriends,
+    fetchAllFriends,
+    messages,
+    fetchConversation,
+    isFriendsFetching,
+    isMessagesFetching,
+    sendMessage,
+    setSelectedFriendId,
+    selectedFriendId
+  } = useSocialStore();
+
   const friends: FriendPreview[] = useMemo(
-    () => (storeFriends as UserResponse[]).map((u) => ({ id: u._id, name: u.username, profile_pic: u.profile_pic })),
+    () => (storeFriends || []).map((u) => ({ id: u._id, name: u.username, profile_pic: u.profile_pic, status: u.status })),
     [storeFriends]
   );
 
-  // Start with no active friend; user must select one from the list
-  const [activeFriendId, setActiveFriendId] = useState<string | undefined>(undefined);
-  const [messagesByFriend, setMessagesByFriend] = useState<Record<string, ChatMessage[]>>({});
   const [draft, setDraft] = useState('');
-  // Derive current friend and message list with memoization to avoid
-  // unnecessary recalculations on unrelated state updates.
-  const activeFriend = useMemo(() => friends.find((f) => f.id === activeFriendId), [friends, activeFriendId]);
-  const friendMessages = useMemo(() => (activeFriendId ? (messagesByFriend[activeFriendId] || []) : []), [messagesByFriend, activeFriendId]);
 
-  // Stable callback so FriendList doesn't re-render due to handler identity changes
-  const handleSelectFriend = useCallback((id: string) => setActiveFriendId(id), []);
+  const activeFriend = useMemo(() => friends.find((f) => f.id === selectedFriendId), [friends, selectedFriendId]);
 
-  // Load friends on mount via store
+  const handleSelectFriend = useCallback((id: string) => {
+    setSelectedFriendId(id);
+    fetchConversation(id);
+  }, [setSelectedFriendId, fetchConversation]);
+
   useEffect(() => {
     fetchAllFriends();
   }, [fetchAllFriends]);
 
-  // Load conversation whenever activeFriendId changes
   useEffect(() => {
-    const loadConversation = async () => {
-      if (!activeFriendId) return;
-      try {
-        const conv = await messageApi.getConversation(activeFriendId);
-        const mapped: ChatMessage[] = conv.map((m) => ({
-          id: m._id,
-          from: m.sender_id === activeFriendId ? activeFriendId : 'me',
-          text: m.text,
-          image: m.image,
-          video: m.video,
-          created_at: new Date(m.created_at).getTime(),
-          updated_at: new Date(m.updated_at).getTime(),
-        }));
-        setMessagesByFriend((prev) => ({ ...prev, [activeFriendId]: mapped }));
-      } catch {
-        themedToast.error('Failed to load messages');
-      }
-    };
-    loadConversation();
-  }, [activeFriendId]);
+    if (selectedFriendId) {
+      fetchConversation(selectedFriendId);
+    }
+  }, [selectedFriendId, fetchConversation]);
+
   return (
     <div className="relative pt-[calc(var(--navbar-height,56px)+2px)] bg-base-200 h-screen">
       <div className="h-full min-h-0 flex w-full overflow-hidden bg-base-100">
-        <FriendList friends={friends} activeFriendId={activeFriendId} onSelect={handleSelectFriend} />
-        <MessagePanel
-          activeFriendId={activeFriendId}
-          messages={friendMessages}
-          activeFriendName={activeFriend?.name}
-          activeFriendStatus={activeFriend?.status}
-          draft={draft}
-          setDraft={setDraft}
-          onSend={(text) => {
-            if (!activeFriendId) return; // no friend selected, ignore send
-            // For now, send text only. Image/video can be handled via upload endpoint and send URL.
-            messageApi
-              .sendMessage(activeFriendId, { text })
-              .then((saved) => {
-                const newMsg: ChatMessage = {
-                  id: saved._id,
-                  from: 'me',
-                  text: saved.text,
-                  image: saved.image,
-                  video: saved.video,
-                  created_at: new Date(saved.created_at).getTime(),
-                  updated_at: new Date(saved.updated_at).getTime(),
-                };
-                setMessagesByFriend((prev) => ({
-                  ...prev,
-                  [activeFriendId]: [...(prev[activeFriendId] || []), newMsg],
-                }));
-                setDraft('');
-              })
-              .catch(() => {
-                themedToast.error('Failed to send message');
-              });
-          }}
-        />
+        <div className="w-64 min-w-[16rem] max-w-xs border-r border-base-300 flex flex-col">
+          {isFriendsFetching ? (
+            <div className="p-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 mb-4">
+                  <Skeleton height={40} width={40} className="rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton height={16} width={100} />
+                    <Skeleton height={12} width={60} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <FriendList friends={friends} activeFriendId={selectedFriendId} onSelect={handleSelectFriend} />
+          )}
+        </div>
+        <div className="flex-1 flex flex-col min-h-0">
+          <MessagePanel
+            activeFriendId={selectedFriendId}
+            messages={messages}
+            activeFriendName={activeFriend?.name}
+            activeFriendStatus={activeFriend?.status}
+            draft={draft}
+            setDraft={setDraft}
+            isMessagesFetching={isMessagesFetching}
+            onSend={async (text, image, video) => {
+              if (!selectedFriendId) return;
+              await sendMessage(text, image, video);
+              setDraft('');
+            }}
+          />
+        </div>
       </div>
     </div>
   );

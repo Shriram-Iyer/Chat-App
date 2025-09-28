@@ -8,6 +8,7 @@ import type { LoginRequest, RegisterRequest, ResponseError, UpdateUserRequest, U
 
 interface AuthState {
     authUser: UserResponse | null;
+    onlineUsers: Array<UserResponse>;
     isSigningUp: boolean;
     isLoggingIn: boolean;
     isUpdatingProfile: boolean;
@@ -21,6 +22,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
     authUser: null,
+    onlineUsers: [],
     isSigningUp: false,
     isLoggingIn: false,
     isUpdatingProfile: false,

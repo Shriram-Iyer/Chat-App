@@ -91,6 +91,7 @@ export interface UserResponse {
   email: string;
   about: string;
   profile_pic: string;
+  status: 'online' | 'offline' | 'away';
   created_at: string;
   updated_at: string;
 }
