@@ -1,6 +1,6 @@
-from cloudinary import config as cloudinary_config
 import cloudinary
 import cloudinary.uploader as _cloudinary_uploader
+from cloudinary import config as cloudinary_config
 
 from config.config import CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME
 

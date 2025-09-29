@@ -64,3 +64,18 @@ def validate_update_profile_payload(payload):
     except ValidationError as err:
         return False, err.messages
     return True, result
+
+
+class SendMessageSchema(Schema):
+    text = fields.String(required=False)
+    image = fields.String(required=False)
+    video = fields.String(required=False)
+
+
+def validate_send_message_payload(payload):
+    schema = SendMessageSchema(unknown=RAISE)
+    try:
+        result = schema.load(payload)
+    except ValidationError as err:
+        return False, err.messages
+    return True, result

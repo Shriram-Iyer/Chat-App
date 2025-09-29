@@ -1,15 +1,14 @@
 from flask import Blueprint, request, g, jsonify
 from flask_cors import CORS
 
-from utils import response_user
 from config import CORS_ORIGINS, CORS_SUPPORTS_CREDENTIALS, CORS_METHODS
 from service import update_profile, get_friends, get_all_users, send_request, accept_request, reject_request, \
     get_friend_requests, get_outgoing_friend_request
 from utils import login_required
-
+from utils import response_user
 
 user_bp = Blueprint('user', __name__, url_prefix='/api/user')
-CORS(user_bp,methods=CORS_METHODS, origns=CORS_ORIGINS, supports_credentials=CORS_SUPPORTS_CREDENTIALS)
+CORS(user_bp, methods=CORS_METHODS, origns=CORS_ORIGINS, supports_credentials=CORS_SUPPORTS_CREDENTIALS)
 
 
 @user_bp.route('/update-profile', methods=['POST'])
@@ -23,7 +22,6 @@ def update_profile_route():
 @login_required
 def get_current_user_route():
     user = getattr(g, 'current_user', None)
-    
     if user is None:
         return jsonify({"error": "Unauthorized"}), 401
     return jsonify(response_user(user)), 200

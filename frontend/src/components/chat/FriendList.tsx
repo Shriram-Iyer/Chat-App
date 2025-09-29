@@ -23,7 +23,7 @@ interface FriendListProps {
 export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId, onSelect }) => {
   const { authUser } = useAuthStore();
   return (
-    <aside className="hidden md:flex w-64 flex-col min-h-0 border-r border-base-300 bg-base-100">
+    <aside className="hidden md:flex w-64 flex-col min-h-0 border-r border-base-300 bg-base-100 h-full relative">
       <div className="p-3 border-b border-base-300 flex items-center gap-3">
         {/* Avatar on the left with tooltip above */}
         <div className="relative group">
@@ -70,7 +70,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId,
         </div>
       </div>
       {/* Scrollable friend list */}
-  <ul className="flex-1 min-h-0 overflow-y-auto scrollbar-theme">
+      <ul className="flex-1 min-h-0 overflow-y-auto scrollbar-theme">
         {friends.map(f => {
           const active = f.id === activeFriendId;
           return (
@@ -105,7 +105,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId,
           );
         })}
       </ul>
-      <div className="p-3 border-t border-base-300 text-xs text-base-content/60">
+      <div className="absolute left-0 right-0 bottom-0 border-t border-base-300 text-xs text-base-content/60 flex items-center justify-center h-10 bg-base-100">
         {friends.length} friends
       </div>
     </aside>

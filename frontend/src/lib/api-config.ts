@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import { type OutgoingRequest, type IncomingRequest, type LoginRequest, type RegisterRequest, type ResponseError, type UpdateUserRequest, type UserResponse, type ResponseSuccess } from '@/types/user';
+import { ChatMessage } from '@/types/message';
 
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
@@ -297,27 +298,15 @@ export const userApi = {
   },
 }
 
-// Message types and API
-export interface MessageResponse {
-  _id: string;
-  sender_id: string;
-  receiver_id: string;
-  text?: string;
-  image?: string;
-  video?: string;
-  created_at: string;
-  updated_at: string;
-}
-
 export const messageApi = {
   // Get conversation between current user and a friend
   getConversation: async (friendId: string) => {
     try {
-      const data = await api.get<Array<MessageResponse> | ResponseError>(`/chat/${friendId}`);
+      const data = await api.get<Array<ChatMessage> | ResponseError>(`/chat/${friendId}`);
       if ((data as ResponseError)?.error) {
         throw new Error((data as ResponseError).error);
       }
-      return data as Array<MessageResponse>;
+      return data as Array<ChatMessage>;
     } catch (error) {
       console.error('Failed to fetch conversation:', error);
       throw error;
@@ -327,11 +316,11 @@ export const messageApi = {
   // Send a message to a friend (text-only for now)
   sendMessage: async (friendId: string, payload: { text?: string; image?: string; video?: string }) => {
     try {
-      const data = await api.post<MessageResponse | ResponseError>(`/message/send`, { receiver_id: friendId, ...payload });
+      const data = await api.post<ChatMessage | ResponseError>(`/chat/send/${friendId}`, payload);
       if ((data as ResponseError)?.error) {
         throw new Error((data as ResponseError).error);
       }
-      return data as MessageResponse;
+      return data as ChatMessage;
     } catch (error) {
       console.error('Failed to send message:', error);
       throw error;

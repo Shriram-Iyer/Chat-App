@@ -4,12 +4,6 @@ from config import FLASK_ENV, cloudinary_instance
 from models.user import User
 from utils import validate_signup_payload, validate_login_payload, user_validation, generate_auth_token, \
     response_user
-from flask import make_response, jsonify
-
-from config import FLASK_ENV, cloudinary_instance
-from models.user import User
-from utils import validate_signup_payload, validate_login_payload, user_validation, generate_auth_token, \
-    response_user
 
 
 def login(request):
@@ -23,11 +17,12 @@ def login(request):
             return jsonify({"error": "Invalid email or password."}), 401
         if not existing_user.check_password(result['password']):
             return jsonify({"error": "Invalid email or password."}), 401
-        new_token = generate_auth_token(existing_user)
+        existing_user_update = existing_user.update_user(status="online")
+        new_token = generate_auth_token(existing_user_update)
         if not new_token:
             return jsonify({"error": "Failed to generate auth token."}), 500
 
-        response = make_response(jsonify(response_user(existing_user)))
+        response = make_response(jsonify(response_user(existing_user_update)))
         response.set_cookie("jwt", new_token, httponly=True, max_age=7 * 24 * 60 * 60, samesite='strict',
                             secure=(FLASK_ENV == 'production'))
         return response, 200
@@ -61,7 +56,8 @@ def sign_up(request):
         return jsonify({"error": "Internal Server Error"}), 500
 
 
-def logout():
+def logout(user):
+    user.update_user(status="offline")
     response = make_response(jsonify({"message": "Logout successful", "success": True}))
     response.set_cookie("jwt", "", expires=0, max_age=0, httponly=True, samesite='strict',
                         secure=(FLASK_ENV == 'production'))

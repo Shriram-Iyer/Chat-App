@@ -22,7 +22,7 @@ def create_app():
     web_server.register_blueprint(user_bp)
 
     # Initialize MongoEngine connection
-    init_mongoengine()  
+    init_mongoengine()
 
     return web_server
 

@@ -1,5 +1,6 @@
-import { userApi } from "@/lib/api-config";
+import { userApi, messageApi } from "@/lib/api-config";
 import { themedToast } from "@/lib/themed-toast";
+import { ChatMessage } from "@/types/message";
 import { type OutgoingRequest, type IncomingRequest, type UserResponse } from "@/types/user";
 import { create } from "zustand";
 
@@ -7,27 +8,36 @@ interface SocialState {
     friendRequestsSent: Array<IncomingRequest>
     outgoingFriendRequests: Array<OutgoingRequest>
     allUsers: Array<UserResponse>
-    friends: Array<UserResponse> // Placeholder for future friends list
+    friends: Array<UserResponse>
+    messages: Array<ChatMessage>
+    selectedFriendId?: string;
     isFetching: boolean
     isSendingRequest: boolean
-    isFriendsFetching: boolean // Placeholder for future friends fetch state
-    fetchAllFriends: () => Promise<void>; // Placeholder for future friends fetch function
+    isMessagesFetching: boolean
+    isFriendsFetching: boolean
+    fetchAllFriends: () => Promise<void>;
     fetchAllUsers: () => Promise<void>;
     fetchFriendRequests: () => Promise<void>;
     fetchOutgoingFriendRequests: () => Promise<void>;
     sendFriendRequest: (recipient_id: string) => Promise<void>;
     acceptFriendRequest: (request_id: string) => Promise<void>;
     rejectFriendRequest: (request_id: string) => Promise<void>;
+    fetchConversation: (friendId: string) => Promise<void>;
+    sendMessage: (text?: string, image?: string, video?: string) => Promise<void>;
+    setSelectedFriendId: (id: string | undefined) => void;
 }
 
-export const useSocialStore = create<SocialState>((set) => ({
+export const useSocialStore = create<SocialState>((set, get) => ({
     friendRequestsSent: [],
     outgoingFriendRequests: [],
     allUsers: [],
-    friends: [], // Placeholder for future friends list
+    friends: [],
+    messages: [],
+    selectedFriendId: undefined,
     isFetching: false,
     isSendingRequest: false,
-    isFriendsFetching: false, // Placeholder for future friends fetch state
+    isMessagesFetching: false,
+    isFriendsFetching: false,
     fetchAllFriends: async () => {
         set({ isFriendsFetching: true });
         try {
@@ -116,5 +126,30 @@ export const useSocialStore = create<SocialState>((set) => ({
         } finally {
             set({ isSendingRequest: false });
         }
-    }
+    },
+    fetchConversation: async (friendId: string) => {
+        set({ isMessagesFetching: true });
+        try {
+            const messages = await messageApi.getConversation(friendId);
+            set({ messages });
+            themedToast.success('Fetched conversation', 'global-fetch-status');
+        } catch (error) {
+            console.error('Failed to fetch conversation:', error);
+            themedToast.error('Failed to fetch conversation');
+        } finally {
+            set({ isMessagesFetching: false });
+        }
+    },
+    sendMessage: async (text, image, video) => {
+        const friendId = get().selectedFriendId;
+        if (!friendId) return;
+        try {
+            const newMessage = await messageApi.sendMessage(friendId, { text, image, video });
+            set((state) => ({ messages: [...state.messages, newMessage] }));
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            themedToast.error('Failed to send message');
+        }
+    },
+    setSelectedFriendId: (id) => set({ selectedFriendId: id }),
 }))

@@ -204,6 +204,7 @@ export default function SocialPage() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{u.username}</p>
                           <p className="truncate text-xs text-base-content/60">{u.email}</p>
+                          <span className={`text-xs ${u.status === 'online' ? 'text-success' : u.status === 'away' ? 'text-warning' : 'text-base-content/60'}`}>{u.status}</span>
                         </div>
                         {isFriend && <span className="badge badge-success badge-sm">Friends</span>}
                       </div>
