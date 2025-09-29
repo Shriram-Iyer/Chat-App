@@ -38,12 +38,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.setAttribute('data-theme', theme);
       document.documentElement.className = theme;
       localStorage.setItem('theme', theme);
-      console.log('Theme applied:', theme); // Debug log
     }
   }, [theme, mounted]);
 
   const setTheme = (newTheme: string) => {
-    console.log('Setting theme to:', newTheme); // Debug log
     if (THEMES.includes(newTheme)) {
       setThemeState(newTheme);
     }

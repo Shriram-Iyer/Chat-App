@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 export default function SocialPage() {
   const [loading, setLoading] = useState(true);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
-  const { authUser } = useAuthStore();
+  const { authUser, onlineUsers } = useAuthStore();
   const {
     allUsers,
     friendRequestsSent: incoming, // incoming to me
@@ -97,6 +97,8 @@ export default function SocialPage() {
   }, [outgoing]);
 
   const friendsSet = useMemo(() => new Set(friends.map((f) => f._id)), [friends]);
+  // Only online friends
+  const onlineFriends = useMemo(() => friends.filter(f => onlineUsers.includes(f._id)), [friends, onlineUsers]);
 
   const visibleUsers = useMemo(
     () => allUsers.filter((u) => u._id !== authUser?._id),
@@ -106,6 +108,33 @@ export default function SocialPage() {
   return (
     <div className="relative pt-[calc(var(--navbar-height,56px)+2px)] min-h-[calc(100vh-var(--navbar-height,56px)-2px)]">
       <div className="container mx-auto px-4 pb-6 space-y-6">
+        {/* Online Friends */}
+        <section className="bg-base-100 border border-base-300 rounded-xl p-4">
+          <h2 className="text-lg font-medium mb-4">Online Friends</h2>
+          {loading ? (
+            <div className="py-4 text-base-content/60">Loading…</div>
+          ) : onlineFriends.length === 0 ? (
+            <div className="py-4 text-base-content/60">No friends online</div>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {onlineFriends.map((f) => (
+                <div key={f._id} className="card bg-base-50 border border-base-300 rounded-xl shadow-sm w-fit">
+                  <div className="card-body p-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar size="sm" src={f.profile_pic} name={f.username} fallback="initials" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{f.username}</p>
+                        <p className="truncate text-xs text-base-content/60">{f.email}</p>
+                        <span className={`text-xs text-success`}>online</span>
+                      </div>
+                      <span className="badge badge-success badge-sm">Online</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
         <h1 className="text-2xl font-semibold">Social</h1>
 
         {/* Incoming Requests */}
@@ -195,6 +224,7 @@ export default function SocialPage() {
                 const outgoingReq = outgoingByRecipientId.get(u._id);
                 const outgoingStatus = outgoingReq?.status;
                 const isFriend = friendsSet.has(u._id) || outgoingStatus === 'accepted' || incomingReq?.status === 'accepted';
+                const isOnline = onlineUsers.includes(u._id);
 
                 return (
                   <div key={u._id} className="card bg-base-50 border border-base-300 rounded-xl shadow-sm w-fit">
@@ -204,9 +234,10 @@ export default function SocialPage() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{u.username}</p>
                           <p className="truncate text-xs text-base-content/60">{u.email}</p>
-                          <span className={`text-xs ${u.status === 'online' ? 'text-success' : u.status === 'away' ? 'text-warning' : 'text-base-content/60'}`}>{u.status}</span>
+                          <span className={`text-xs ${isOnline ? 'text-success' : 'text-base-content/60'}`}>{isOnline ? 'online' : 'offline'}</span>
                         </div>
                         {isFriend && <span className="badge badge-success badge-sm">Friends</span>}
+                        {isOnline && <span className="badge badge-success badge-sm">Online</span>}
                       </div>
 
                       <div className="mt-3 flex items-center gap-2">

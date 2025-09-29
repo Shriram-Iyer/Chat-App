@@ -7,7 +7,6 @@ export interface FriendPreview {
   id: string;
   name: string;
   avatar?: string;
-  status?: 'online' | 'offline' | 'away';
   profile_pic?: string;
   lastMessage?: string;
   unread?: number;
@@ -21,7 +20,8 @@ interface FriendListProps {
 
 // Sidebar list of friends for selecting a conversation
 export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId, onSelect }) => {
-  const { authUser } = useAuthStore();
+  const { authUser, onlineUsers } = useAuthStore();
+  console.log('onlineUsers:', onlineUsers);
   return (
     <aside className="hidden md:flex w-64 flex-col min-h-0 border-r border-base-300 bg-base-100 h-full relative">
       <div className="p-3 border-b border-base-300 flex items-center gap-3">
@@ -73,6 +73,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId,
       <ul className="flex-1 min-h-0 overflow-y-auto scrollbar-theme">
         {friends.map(f => {
           const active = f.id === activeFriendId;
+          const isOnline = onlineUsers.includes(f.id);
           return (
             <li key={f.id}>
               <button
@@ -86,10 +87,9 @@ export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId,
                     name={f.name}
                     alt={f.name}
                     fallback="initials"
+                    className={isOnline ? 'border-2 border-success' : ''}
                   />
-                  {f.status && (
-                    <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-base-100 ${f.status === 'online' ? 'bg-success' : f.status === 'away' ? 'bg-warning' : 'bg-base-300'}`}></span>
-                  )}
+                  <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-base-100 ${isOnline ? 'bg-success' : 'bg-base-300'}`}></span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="truncate leading-tight">{f.name}</p>

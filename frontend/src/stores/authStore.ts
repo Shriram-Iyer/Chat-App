@@ -4,42 +4,42 @@ import { authApi } from '@/lib/api-config';
 import { themedToast } from '@/lib/themed-toast';
 import { create } from 'zustand';
 import type { LoginRequest, RegisterRequest, ResponseError, UpdateUserRequest, UserResponse } from '@/types/user';
+import { type Socket, io } from 'socket.io-client';
+
+// Singleton socket instance for the tab
+let globalSocket: Socket | null = null;
 
 
 interface AuthState {
     authUser: UserResponse | null;
-    onlineUsers: Array<UserResponse>;
+    onlineUsers: Array<string>;
     isSigningUp: boolean;
     isLoggingIn: boolean;
     isUpdatingProfile: boolean;
     isCheckingAuth: boolean;
+    socket: Socket | null;
     checkAuth: () => Promise<void>;
     signUp: (data: RegisterRequest) => Promise<void>;
     logout: () => Promise<void>;
     login: (data: LoginRequest) => Promise<void>;
-    updateProfile: (data: UpdateUserRequest) => Promise<void>; // Placeholder for future profile update function
+    updateProfile: (data: UpdateUserRequest) => Promise<void>;
+    connectSocket: () => void;
+    disconnectSocket: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     authUser: null,
     onlineUsers: [],
     isSigningUp: false,
     isLoggingIn: false,
     isUpdatingProfile: false,
     isCheckingAuth: true,
+    socket: null,
 
     checkAuth: async () => {
         try {
-            // Skip API call if no backend URL is configured
-            if (!process.env.NEXT_PUBLIC_API) {
-                console.warn('No API URL configured, skipping auth check');
-                set({ authUser: null, isCheckingAuth: false });
-                return;
-            }
-
             const user = await authApi.checkAuth();
             set({ authUser: user, isCheckingAuth: false });
-
         } catch (error) {
             console.error('Error checking auth:', error);
             set({ authUser: null, isCheckingAuth: false });
@@ -69,6 +69,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             await authApi.logout();
             set({ authUser: null });
             themedToast.success('Logged out successfully');
+            get().disconnectSocket();
         } catch (error) {
             console.error('Logout failed:', error);
             themedToast.error('Logout failed');
@@ -81,6 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             if ((user as ResponseError)?.error) {
                 themedToast.error((user as ResponseError).error);
                 set({ isLoggingIn: false });
+                themedToast.error('Login failed');
                 return;
             }
             set({ authUser: user as UserResponse });
@@ -105,5 +107,38 @@ export const useAuthStore = create<AuthState>((set) => ({
         } finally {
             set({ isUpdatingProfile: false });
         }
+    },
+    connectSocket: () => {
+        const { authUser } = get();
+        if (!authUser) {
+            return;
+        }
+        // If already connected and userId matches, do nothing
+        if (globalSocket && globalSocket.connected && globalSocket.io.opts.query?.userId === authUser._id) {
+            set({ socket: globalSocket });
+            return;
+        }
+        // If socket exists but userId changed or not connected, disconnect first
+        if (globalSocket) {
+            globalSocket.disconnect();
+            globalSocket = null;
+        }
+        console.log('Connecting socket for user:', authUser._id); // Debug log
+        globalSocket = io(process.env.NEXT_PUBLIC_API, {
+            query: { user_id: authUser._id },
+        });
+        globalSocket.connect();
+        globalSocket.on('get_online_users', (user_ids: Array<string>) => {
+            set({ onlineUsers: user_ids });
+        });
+        set({ socket: globalSocket });
+    },
+    disconnectSocket: () => {
+        if (globalSocket) {
+            globalSocket.disconnect();
+            globalSocket = null;
+        }
+        set({ socket: null });
     }
+
 }))

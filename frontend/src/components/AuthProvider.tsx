@@ -15,14 +15,29 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Debug: track mount/unmount
+  useEffect(() => {
+    return () => {};
+  }, []);
   const router = useRouter();
   const pathname = usePathname();
-  const { authUser, isCheckingAuth, checkAuth } = useAuthStore();
+  const { authUser, isCheckingAuth, checkAuth, connectSocket, disconnectSocket } = useAuthStore();
 
   // Check auth on mount
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  // Connect socket after authentication and on protected routes
+  useEffect(() => {
+    const publicRoutes = ['/login', '/signup'];
+    const isPublicRoute = publicRoutes.includes(pathname);
+    if (authUser && !isPublicRoute) {
+      connectSocket();
+    } else {
+      disconnectSocket();
+    }
+  }, [authUser, pathname, connectSocket, disconnectSocket]);
 
   // Route protection logic
   useEffect(() => {

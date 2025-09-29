@@ -6,6 +6,7 @@ import { FriendList, FriendPreview } from '@/components/chat/FriendList';
 import { MessagePanel } from '@/components/chat/MessagePanel';
 import { useSocialStore } from '@/stores/socialStore';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function HomePage() {
   useAuth();
@@ -22,9 +23,16 @@ export default function HomePage() {
     selectedFriendId
   } = useSocialStore();
 
+  const { onlineUsers } = useAuthStore();
   const friends: FriendPreview[] = useMemo(
-    () => (storeFriends || []).map((u) => ({ id: u._id, name: u.username, profile_pic: u.profile_pic, status: u.status })),
-    [storeFriends]
+    () => (storeFriends || [])
+      .map((u) => ({
+        id: u._id,
+        name: u.username,
+        profile_pic: u.profile_pic,
+        status: onlineUsers.includes(u._id) ? 'online' : 'offline'
+      })),
+    [storeFriends, onlineUsers]
   );
 
   const [draft, setDraft] = useState('');
@@ -71,7 +79,6 @@ export default function HomePage() {
             activeFriendId={selectedFriendId}
             messages={messages}
             activeFriendName={activeFriend?.name}
-            activeFriendStatus={activeFriend?.status}
             draft={draft}
             setDraft={setDraft}
             isMessagesFetching={isMessagesFetching}

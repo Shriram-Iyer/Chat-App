@@ -4,7 +4,7 @@ import { ChatMessage } from '@/types/message';
 
 // Create axios instance with default config
 const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API || 'http://localhost:5000/api',
+  baseURL: `${process.env.NEXT_PUBLIC_API}/api` || 'http://localhost:5000/api',
   withCredentials: true, // Include cookies in requests
 });
 
@@ -69,9 +69,7 @@ apiClient.interceptors.response.use(
 
     // 401s are expected during auth checks; keep noise low
     if (status === 401) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Auth check: Not authenticated', { method, url });
-      }
+      // ...existing code...
     } else if (typeof status === 'number') {
       const body = safeBodyPreview(data);
       console.error(`${compactMsg}${body}`);
@@ -142,13 +140,10 @@ export const authApi = {
       const status = err.response?.status;
       if (status === 401) {
         // Expected when user is not logged in; keep noise low
-        console.log('Auth check: 401 (not authenticated)');
+  // ...existing code...
       } else if (process.env.NODE_ENV === 'development') {
         // Network/no-backend or other errors in dev
-        console.log('Auth check skipped or failed:', {
-          status,
-          message: err.message,
-        });
+        // ...existing code...
       } else {
         console.error('Auth check failed:', error);
       }
