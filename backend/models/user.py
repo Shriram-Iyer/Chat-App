@@ -15,7 +15,6 @@ class User(Document):
     password = StringField(required=True, min_length=6)
     about = StringField(default="")
     profile_pic = StringField(default="")
-    status = StringField(choices=['online', 'offline', 'away'], default='offline')
     friends = ListField(ReferenceField('User'))
     created_at = DateTimeField(default=lambda: datetime.now(UTC))
     updated_at = DateTimeField(default=lambda: datetime.now(UTC))
@@ -71,7 +70,6 @@ class User(Document):
                 "password": self.password,
                 "profile_pic": self.profile_pic,
                 "about": self.about,
-                "status": self.status if self.status else "offline",
                 "friends": [str(friend.id) for friend in self.friends] if self.friends else [],
                 "created_at": self.created_at.isoformat() if self.created_at else None,
                 "updated_at": self.updated_at.isoformat() if self.updated_at else None
@@ -89,7 +87,6 @@ class User(Document):
                 password=data.get("password"),
                 profile_pic=data.get("profile_pic", ""),
                 about=data.get("about", ""),
-                status=data.get("status", "offline"),
                 friends=data.get("friends", []),
                 created_at=data.get("created_at", datetime.now(UTC)),
                 updated_at=data.get("updated_at", datetime.now(UTC))

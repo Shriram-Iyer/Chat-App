@@ -1,10 +1,11 @@
 # app/main.py
 from flask import Flask
+from flask_socketio import SocketIO
 
 # Import configuration from config.py
 from config import SECRET_KEY, FLASK_ENV, HOST, \
-    PORT, init_mongoengine
-from routes import auth_bp, chat_bp, user_bp
+    PORT, init_mongoengine, CORS_ORIGINS
+from routes import auth_bp, chat_bp, user_bp, register_socket_routes
 
 
 def create_app():
@@ -23,10 +24,11 @@ def create_app():
 
     # Initialize MongoEngine connection
     init_mongoengine()
-
-    return web_server
+    socketio = SocketIO(web_server, cors_allowed_origins=CORS_ORIGINS)
+    register_socket_routes(socketio)
+    return web_server, socketio
 
 
 if __name__ == '__main__':
-    server = create_app()
-    server.run(debug=True, host=HOST, port=PORT)
+    server, socket = create_app()
+    socket.run(server, debug=True, host=HOST, port=PORT)

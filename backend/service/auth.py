@@ -17,12 +17,11 @@ def login(request):
             return jsonify({"error": "Invalid email or password."}), 401
         if not existing_user.check_password(result['password']):
             return jsonify({"error": "Invalid email or password."}), 401
-        existing_user_update = existing_user.update_user(status="online")
-        new_token = generate_auth_token(existing_user_update)
+        new_token = generate_auth_token(existing_user)
         if not new_token:
             return jsonify({"error": "Failed to generate auth token."}), 500
 
-        response = make_response(jsonify(response_user(existing_user_update)))
+        response = make_response(jsonify(response_user(existing_user)))
         response.set_cookie("jwt", new_token, httponly=True, max_age=7 * 24 * 60 * 60, samesite='strict',
                             secure=(FLASK_ENV == 'production'))
         return response, 200
@@ -57,7 +56,6 @@ def sign_up(request):
 
 
 def logout(user):
-    user.update_user(status="offline")
     response = make_response(jsonify({"message": "Logout successful", "success": True}))
     response.set_cookie("jwt", "", expires=0, max_age=0, httponly=True, samesite='strict',
                         secure=(FLASK_ENV == 'production'))
