@@ -129,6 +129,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
         globalSocket.connect();
         globalSocket.on('get_online_users', (user_ids: Array<string>) => {
+            console.log('Online users updated:', user_ids); // Debug log
             set({ onlineUsers: user_ids });
         });
         set({ socket: globalSocket });

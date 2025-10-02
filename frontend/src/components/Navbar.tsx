@@ -56,7 +56,7 @@ export default function Navbar() {
     <>
       <nav
         ref={navRef}
-        className="navbar fixed top-0 left-0 right-0 z-[1000] bg-transparent backdrop-blur-0 shadow-none border-none min-h-0 py-1 px-2"
+        className="navbar fixed top-0 left-0 right-0 z-[1000] bg-base-100/90 backdrop-blur-md shadow border-b border-base-300 min-h-0 py-1 px-2 flex flex-row items-center"
       >
         <div className="flex-1">
           <div className="cursor-pointer" onClick={handleLogoClick}>
@@ -70,10 +70,10 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex-none flex items-center gap-2">
-          {user ? (
+        {/* Desktop nav */}
+        <div className="hidden md:flex flex-none items-center gap-2">
+          {user && (
             <>
-              {/* Top-level tabs with spacing and glass morphism */}
               <div
                 role="tablist"
                 className="tabs tabs-boxed tabs-sm rounded-lg p-1 gap-3 flex bg-gradient-to-br from-base-100/50 to-base-100/80 backdrop-blur-sm border-2 border-base-300/50 shadow-lg"
@@ -118,15 +118,12 @@ export default function Navbar() {
                   Profile
                 </Link>
               </div>
-
-              {/* Logout icon button */}
               <button
                 onClick={handleLogout}
                 className="btn btn-circle btn-ghost btn-sm bg-base-200/60 border border-base-300 hover:bg-base-300/60 backdrop-blur-sm"
                 title="Logout"
                 aria-label="Logout"
               >
-                {/* Heroicons outline: Arrow Right On Rectangle */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -141,9 +138,24 @@ export default function Navbar() {
                 <span className="sr-only">Logout</span>
               </button>
             </>
-          ) : null}
-          {/* Standalone Theme toggle at the far right (last) */}
+          )}
           <ThemeToggle variant="button" />
+        </div>
+
+        {/* Mobile nav: hamburger menu */}
+        <div className="md:hidden flex-none flex items-center gap-2">
+          <details className="dropdown dropdown-end">
+            <summary className="btn btn-circle btn-ghost btn-sm" aria-label="Open menu">
+              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            </summary>
+            <ul className="dropdown-content menu menu-sm bg-base-100 rounded-box shadow-lg mt-2 w-40 p-2 border border-base-300 z-[1001]">
+              <li><Link href="/">Chat</Link></li>
+              <li><Link href="/social">Social</Link></li>
+              <li><Link href="/profile">Profile</Link></li>
+              <li><button onClick={handleLogout}>Logout</button></li>
+              <li><ThemeToggle variant="button" /></li>
+            </ul>
+          </details>
         </div>
       </nav>
     </>

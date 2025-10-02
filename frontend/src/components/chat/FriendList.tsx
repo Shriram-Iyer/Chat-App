@@ -21,9 +21,8 @@ interface FriendListProps {
 // Sidebar list of friends for selecting a conversation
 export const FriendList: React.FC<FriendListProps> = ({ friends, activeFriendId, onSelect }) => {
   const { authUser, onlineUsers } = useAuthStore();
-  console.log('onlineUsers:', onlineUsers);
   return (
-    <aside className="hidden md:flex w-64 flex-col min-h-0 border-r border-base-300 bg-base-100 h-full relative">
+    <aside className="flex w-64 flex-col min-h-0 border-r border-base-300 bg-base-100 h-full relative">
       <div className="p-3 border-b border-base-300 flex items-center gap-3">
         {/* Avatar on the left with tooltip above */}
         <div className="relative group">

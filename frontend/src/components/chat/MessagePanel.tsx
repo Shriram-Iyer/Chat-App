@@ -12,15 +12,17 @@ interface MessagePanelProps {
   messages: Array<ChatMessage>;
   activeFriendId?: string;
   activeFriendName?: string;
+  activeFriendProfilePic?: string;
   activeFriendStatus?: string;
   onSend: (text?: string, image?: string, video?: string) => void;
   draft: string;
   setDraft: (v: string) => void;
   isMessagesFetching?: boolean;
+  onOpenSidebar?: () => void;
 }
 
 // Right-hand conversation area: header, messages, and composer
-export const MessagePanel: React.FC<MessagePanelProps> = ({ messages, activeFriendId, activeFriendName, activeFriendStatus, onSend, draft, setDraft, isMessagesFetching }) => {
+export const MessagePanel: React.FC<MessagePanelProps> = ({ messages, activeFriendId, activeFriendName, activeFriendProfilePic, activeFriendStatus, onSend, draft, setDraft, isMessagesFetching, onOpenSidebar }) => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
@@ -97,6 +99,7 @@ export const MessagePanel: React.FC<MessagePanelProps> = ({ messages, activeFrie
       text = draft.trim();
     }
     if (!text && !selectedImage && !selectedVideo) return;
+    setDraft(''); // Clear input immediately
     onSend(text, selectedImage ?? undefined, selectedVideo ?? undefined);
     setSelectedImage(null);
     setSelectedVideo(null);
@@ -107,6 +110,17 @@ export const MessagePanel: React.FC<MessagePanelProps> = ({ messages, activeFrie
   return (
     <section className="flex-1 flex flex-col min-h-0 bg-base-100">
       <div className="h-14 border-b border-base-300 px-4 flex items-center gap-3">
+        {/* Hamburger button for mobile, always visible, never covers content */}
+        {onOpenSidebar && (
+          <button
+            className="md:hidden btn btn-circle btn-ghost btn-sm mr-2"
+            aria-label="Open friends list"
+            onClick={onOpenSidebar}
+            style={{ flexShrink: 0 }}
+          >
+            <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+        )}
         {hasActiveFriend ? (
           <>
             <div className="w-10 h-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center overflow-hidden">
@@ -114,7 +128,7 @@ export const MessagePanel: React.FC<MessagePanelProps> = ({ messages, activeFrie
                 activeFriendStatus === 'Offline' ? (
                   <span className="text-lg">{activeFriendName.charAt(0)}</span>
                 ) : (
-                  <Image src={authUser?.profile_pic || '/default-avatar.png'} alt={activeFriendName} width={40} height={40} className="object-cover w-full h-full" />
+                  <Image src={activeFriendProfilePic || '/default-avatar.png'} alt={activeFriendName} width={40} height={40} className="object-cover w-full h-full" />
                 )
               )}
             </div>
@@ -186,7 +200,7 @@ export const MessagePanel: React.FC<MessagePanelProps> = ({ messages, activeFrie
                 {!messages.length && (
                   <p className="text-xs text-base-content/50 text-center mt-8">No messages yet. Say hi 👋</p>
                 )}
-                <div ref={bottomRef} />
+                <div ref={bottomRef} tabIndex={-1} aria-hidden="true" />
               </>
             )}
           </div>

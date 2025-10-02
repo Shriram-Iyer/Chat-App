@@ -3,6 +3,7 @@ import { themedToast } from "@/lib/themed-toast";
 import { ChatMessage } from "@/types/message";
 import { type OutgoingRequest, type IncomingRequest, type UserResponse } from "@/types/user";
 import { create } from "zustand";
+import { useAuthStore } from "./authStore";
 
 interface SocialState {
     friendRequestsSent: Array<IncomingRequest>
@@ -25,6 +26,8 @@ interface SocialState {
     fetchConversation: (friendId: string) => Promise<void>;
     sendMessage: (text?: string, image?: string, video?: string) => Promise<void>;
     setSelectedFriendId: (id: string | undefined) => void;
+    unSubscribeFromNewMessages: () => void;
+    subscribeToNewMessages: () => void;
 }
 
 export const useSocialStore = create<SocialState>((set, get) => ({
@@ -150,6 +153,19 @@ export const useSocialStore = create<SocialState>((set, get) => ({
             console.error('Failed to send message:', error);
             themedToast.error('Failed to send message');
         }
+    },
+    subscribeToNewMessages: () => {
+        const {selectedFriendId} = get();
+        if(!selectedFriendId) return;
+        const {socket} = useAuthStore.getState();
+        socket?.on('new_message', (message: ChatMessage) => {
+            if(message.sender_id !== selectedFriendId) return;
+            set((state) => ({ messages: [...state.messages, message] }));
+        })
+    },
+    unSubscribeFromNewMessages: () => {
+        const {socket} = useAuthStore.getState();
+        socket?.off('new_message');
     },
     setSelectedFriendId: (id) => set({ selectedFriendId: id }),
 }))
