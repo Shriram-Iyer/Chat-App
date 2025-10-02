@@ -1,9 +1,11 @@
 from flask import jsonify
 from mongoengine import Q
+from flask_socketio import emit
 
-from config import cloudinary_instance
+from config import cloudinary_uploader
 from models.message import Message
 from models.user import User
+from routes.socket_routes import get_receiver_socket_id
 from utils import response_message, validate_send_message_payload
 
 def get_messages(user_id, user):
@@ -35,15 +37,21 @@ def send_message(request, receiver_id, user):
         receiver = User.objects(id=receiver_id).first()
         if not receiver:
             return jsonify({"error": "User Not Found."}), 404
+        # When uploading images or videos, use cloudinary_uploader.upload(...)
         if image:
-            image_res = cloudinary_instance.uploader.upload(image, resource_type="image")
+            # image_res = cloudinary_uploader.upload(image, resource_type="image")
+            image_res = cloudinary_uploader.upload(image, resource_type="image")
             image_url = image_res.get("secure_url")
         if video:
-            video_res = cloudinary_instance.uploader.upload(video, resource_type="video")
+            # video_res = cloudinary_uploader.upload(video, resource_type="video")
+            video_res = cloudinary_uploader.upload(video, resource_type="video")
             video_url = video_res.get("secure_url")
         if text or image_url or video_url:
             new_message = Message(sender=user, receiver=receiver, text=text, image=image_url, video=video_url)
             message_obj = new_message.save()
+            receiver_socket = get_receiver_socket_id(receiver_id)
+            if receiver_socket:
+                emit('new_message', response_message(message_obj), to=receiver_socket, namespace='/')
             if not message_obj:
                 return jsonify({"error": "Failed to send message."}), 500
             print("message_response",response_message(message_obj))

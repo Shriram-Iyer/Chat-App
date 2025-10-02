@@ -1,6 +1,6 @@
 from flask import make_response, jsonify
 
-from config import FLASK_ENV, cloudinary_instance
+from config import FLASK_ENV, cloudinary_uploader
 from models.user import User
 from utils import validate_signup_payload, validate_login_payload, user_validation, generate_auth_token, \
     response_user
@@ -67,7 +67,8 @@ def upload_profile_pic(request, user):
     if not image:
         return jsonify({'error': 'Profile Pic is required'}), 400
     try:
-        upload_result = cloudinary_instance.uploader.upload(image, resource_type="image")
+        # When uploading images, use cloudinary_uploader.upload(...)
+        upload_result = cloudinary_uploader.upload(image, resource_type="image")
         updated_user = user.update_user(profile_pic=upload_result.get('secure_url'))
         if not updated_user:
             return jsonify({"error": "User Not Found."}), 404
