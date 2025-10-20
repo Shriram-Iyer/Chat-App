@@ -139,7 +139,7 @@ const Logo: React.FC<LogoProps> = ({
       currentSize.text,
       onClick && 'cursor-pointer'
     )} onClick={onClick}>
-      ConnectVibe
+      Connect Vibes
     </h1>
   );
 

@@ -22,7 +22,7 @@ def login(request):
             return jsonify({"error": "Failed to generate auth token."}), 500
 
         response = make_response(jsonify(response_user(existing_user)))
-        response.set_cookie("jwt", new_token, httponly=True, max_age=7 * 24 * 60 * 60, samesite='strict',
+        response.set_cookie("jwt", new_token, httponly=True, max_age=7 * 24 * 60 * 60, samesite='lax', domain='connectvibes.site',
                             secure=(FLASK_ENV == 'production'))
         return response, 200
     except Exception as e:
@@ -47,7 +47,7 @@ def sign_up(request):
         if not new_token:
             return jsonify({"error": "Failed to generate auth token."}), 500
         response = make_response(jsonify(response_user(user_obj)))
-        response.set_cookie("jwt", new_token, httponly=True, max_age=7 * 24 * 60 * 60, samesite='strict',
+        response.set_cookie("jwt", new_token, httponly=True, max_age=7 * 24 * 60 * 60, samesite='lax', domain='connectvibes.site',
                             secure=(FLASK_ENV == 'production'))
         return response, 201
     except Exception as e:
@@ -57,7 +57,7 @@ def sign_up(request):
 
 def logout(user):
     response = make_response(jsonify({"message": "Logout successful", "success": True}))
-    response.set_cookie("jwt", "", expires=0, max_age=0, httponly=True, samesite='strict',
+    response.set_cookie("jwt", "", expires=0, max_age=0, httponly=True, samesite='lax', domain='connectvibes.site',
                         secure=(FLASK_ENV == 'production'))
     return response, 200
 

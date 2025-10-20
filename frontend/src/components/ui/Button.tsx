@@ -28,7 +28,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-  const baseClasses = 'btn transition-all duration-300 border border-base-300 rounded-full font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseClasses = 'btn transition-all duration-300 border border-base-300 font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 !rounded-full';
 
     const variants = {
       primary: 'bg-gradient-to-r from-primary via-secondary to-primary text-white shadow-2xl hover:shadow-3xl hover:scale-105 focus:ring-primary/50',
@@ -39,9 +39,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'h-8 px-3 text-sm min-h-8',
-      md: 'h-12 px-6 text-base min-h-12',
-      lg: 'h-14 px-8 text-lg min-h-14'
+      sm: 'px-3 py-2 text-sm',
+      md: 'px-6 py-3 text-base',
+      lg: 'px-8 py-4 text-lg'
     };
 
     const widthClass = fullWidth ? 'w-full' : '';
